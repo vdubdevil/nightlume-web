@@ -1,0 +1,48 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nightlume | Legal Center</title>
+    <link rel="stylesheet" href="../CSS/style_base.css">
+    <link rel="stylesheet" href="../CSS/style_policies.css">
+</head>
+
+<body>
+    <div class="nav-container">
+        <div class="logo neon-text" id="logo-neon">Nightlume</div>
+        <div class="nav-right">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="contacts.html" class="nav-link">Contact</a>
+            <div id="nav-auth"></div>
+        </div>
+    </div>
+    <main class="legal-content">
+        <div class="legal-tabs">
+            <button class="tab-btn active" onclick="showLegal('agreement', this)">User Agreement</button>
+            <button class="tab-btn" onclick="showLegal('privacy', this)">Privacy Policy</button>
+            <button class="tab-btn" onclick="showLegal('refund', this)">Refund Policy</button>
+        </div>
+
+        <div id="legal-body" class="legal-section">
+        </div>
+
+        <div class="footer-note">
+            END OF DOCUMENT — NIGHTLUME SECURE PROTOCOL v4.0.1
+        </div>
+    </main>
+    <script src="../script_policies.js"></script>
+    <div id="custom-confirm" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">SYSTEM ACCESS</div>
+            <p id="modal-text">Terminate active session?</p>
+            <div class="modal-buttons">
+                <button id="confirm-yes" class="modal-btn btn-danger">PROCEED</button>
+                <button id="confirm-no" class="modal-btn">ABORT</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

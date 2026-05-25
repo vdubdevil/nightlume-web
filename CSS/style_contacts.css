@@ -1,0 +1,5 @@
+/* ─── CONTACTS PAGE SPECIFICS ─────────────────────────────────────────────── */
+
+.contact-green-link { color: #00ff88 !important; }
+.contact-green-link::after { background: #00ff88 !important; }
+.features-section .nav-link:hover::after { background: #00ff88; }
