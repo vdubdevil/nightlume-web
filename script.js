@@ -84,7 +84,6 @@ const startTerminal = () => {
 	'<span class="cmd"></span>',
 	'<span class="cmd">> nl.push supported-plat</span>',
 	'checking platform targets...',
-
 	'[√] Windows 10 LTSC',
 	'[√] Windows 11 LTSC',
 	'[×] Linux Mint',
