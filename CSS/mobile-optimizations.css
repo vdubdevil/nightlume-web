@@ -1,0 +1,317 @@
+/* ============================================================================
+   NIGHTLUME — MOBILE RESPONSIVE LAYER
+   Link this file LAST, after style_base.css and every page-specific
+   stylesheet, so its media queries win on cascade without needing !important.
+
+   Breakpoints used: 1024 (tablet) / 768 (large phone-landscape) /
+   600 (phone) / 480 (small phone) / 380 (very small phone)
+
+   Sections mirror the stylesheets you shared:
+   1. Global safeguards (all pages)
+   2. Base / Nav / Hero / Buttons (style_base.css)
+   3. Feature grid, stats, terminal, dev team (style_base / style_index)
+   4. Footer (currently NOT mobile-handled anywhere — fixed here)
+   5. Modal (signup/logout confirm — currently NOT mobile-handled — fixed here)
+   6. Legal / Policies page
+   7. Profile bento grid
+   8. Checkout / Purchase page
+   9. Auth page (login/signup)
+   10. About page (brand block, roadmap, slider, video)
+   11. Contacts page
+   ============================================================================ */
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   1. GLOBAL SAFEGUARDS — apply on every page regardless of breakpoint
+   ──────────────────────────────────────────────────────────────────────── */
+
+img, svg, video, iframe { max-width: 100%; height: auto; }
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body { overflow-x: hidden; }
+
+/* iOS Safari zooms the page in on any input with font-size < 16px.
+   This hits .field-group input, .terminal-input, .input-field across
+   the signup modal, profile settings, and auth pages. */
+@media (max-width: 768px) {
+  input, textarea, select { font-size: 16px !important; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   2. BASE / NAV / HERO / BUTTONS
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  body { padding-top: calc(var(--nav-height) + 24px); }
+
+  .nav-container {
+    width: calc(100% - 24px);
+    top: 12px;
+    padding: 0 16px;
+  }
+
+  .logo { font-size: 15px; letter-spacing: 2px; }
+
+  /* Nav links collapse — assumes a .nav-toggle / .nav-links-mobile pattern.
+     If you don't have a hamburger menu yet, this at minimum stops the
+     current links from overflowing the navbar. */
+  .nav-right { gap: 12px; }
+
+  .hero { padding: 90px 16px 40px; margin-bottom: 60px; }
+
+  .intro-text { font-size: 11px; letter-spacing: 5px; line-height: 1.7; margin-bottom: 16px; }
+
+  .main-title { font-size: 32px; letter-spacing: 6px; line-height: 1.25; }
+
+  .btn-container { flex-direction: column; align-items: center; gap: 12px; margin-bottom: 40px; }
+
+  .action-btn { width: 100%; max-width: 320px; padding: 16px; letter-spacing: 2px; }
+
+  .section-wrapper { margin-bottom: 60px; }
+
+  .section-header { font-size: 15px; letter-spacing: 3px; margin-bottom: 20px; }
+}
+
+@media (max-width: 480px) {
+  .main-title { font-size: 24px; letter-spacing: 4px; }
+  .intro-text { font-size: 10px; letter-spacing: 3px; }
+  .action-btn { font-size: 10px; letter-spacing: 1.5px; padding: 14px; }
+  .btn-reg { padding: 10px 14px; font-size: 10px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   3. FEATURE GRID / STATS / TERMINAL / DEV TEAM
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .features-section { grid-template-columns: repeat(2, 1fr); }
+  .feature-large { grid-column: span 2; grid-row: span 1; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dev-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 700px) {
+  .features-section { grid-template-columns: 1fr; grid-auto-rows: auto; gap: 14px; }
+  .feature-large { grid-column: span 1; }
+  .feature-card { padding: 20px; }
+  .ui-preview { height: 120px; }
+
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .stat-card { padding: 22px 18px; }
+  .stat-value { font-size: 28px; }
+
+  .dev-grid { grid-template-columns: 1fr; gap: 14px; }
+
+  .terminal-window { width: 100%; margin-top: 24px; }
+  .terminal-body { font-size: 10.5px; line-height: 1.5; padding: 16px; }
+  .ascii-logo { font-size: 7.5px; line-height: 1.05; overflow-x: auto; }
+}
+
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr; }
+  .stat-value { font-size: 24px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   4. FOOTER — not handled at all in the shared stylesheets; the 4-column
+   grid will overflow on any phone width without this.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px 20px;
+  }
+  .footer-brand { grid-column: span 2; }
+}
+
+@media (max-width: 560px) {
+  footer { padding: 50px 0 30px; }
+  .footer-content { grid-template-columns: 1fr; gap: 30px; text-align: left; }
+  .footer-brand { grid-column: span 1; }
+  .footer-brand p { max-width: 100%; }
+  .footer-bottom { flex-direction: column; gap: 10px; text-align: center; margin-top: 40px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   5. MODAL (signup / logout-confirm) — .modal-content is a fixed 350px
+   box with 30px padding; on a 320–360px viewport it clips at the edges.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .modal-overlay,
+  .auth-overlay { padding: 16px; }
+
+  .modal-content,
+  .signup-modal,
+  .auth-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 26px 22px;
+  }
+
+  .modal-buttons,
+  .modal-actions { flex-direction: column; }
+  .modal-buttons button,
+  .modal-actions button { width: 100%; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   6. LEGAL / POLICIES PAGE — no mobile rules existed for this page at all.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .legal-content { margin: 70px auto 100px; }
+
+  .legal-tabs {
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 50px;
+  }
+  .tab-btn { padding: 14px; letter-spacing: 2px; font-size: 10px; }
+
+  .legal-section h1 { font-size: 30px; letter-spacing: 6px; }
+  .last-updated { margin-bottom: 60px; letter-spacing: 3px; }
+
+  .legal-section h2 { font-size: 15px; letter-spacing: 3px; margin-top: 40px; }
+
+  .legal-section p,
+  .legal-section li { font-size: 12.5px; text-align: left; }
+  .legal-section li { padding-left: 30px; }
+
+  .req-grid { grid-template-columns: 1fr; gap: 20px; margin: 40px 0; }
+  .req-card { padding: 26px; }
+}
+
+@media (max-width: 420px) {
+  .legal-section h1 { font-size: 22px; letter-spacing: 3px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   7. PROFILE BENTO GRID — 900px breakpoint exists but nothing below it;
+   the 2-column layout still cramps badly under ~500px.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .profile-grid { width: 92%; gap: 14px; margin: 30px auto; }
+  .bento-item { padding: 22px; }
+  .val-main { font-size: 32px; }
+}
+
+@media (max-width: 560px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "id"
+      "sub"
+      "security"
+      "session"
+      "integ"
+      "soft";
+  }
+  .val-main { font-size: 28px; }
+  .info-row { flex-wrap: wrap; gap: 4px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   8. CHECKOUT / PURCHASE PAGE
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .checkout-layout { grid-template-columns: 1fr; gap: 20px; }
+  .checkout-sidebar { order: -1; }
+  .plan-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .plan-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .plan-item { padding: 12px 5px; }
+  .p-price { font-size: 14px; }
+
+  .inv-total { font-size: 15px; }
+  .tech-specs { padding: 12px; }
+
+  /* This was hard-coded to 500px — badly overflows any phone. */
+  .btn-download { width: 100% !important; }
+}
+
+@media (max-width: 380px) {
+  .plan-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   9. AUTH PAGE (login / signup)
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  body.auth-page { padding-top: 90px; }
+
+  .auth-container { max-width: 100%; padding: 0 20px; }
+  .auth-container::before { display: none; }
+
+  .auth-card { padding: 30px 24px; }
+  .auth-card::after { width: 22px; height: 22px; }
+
+  .auth-header { margin-bottom: 26px; }
+  .auth-header h1 { font-size: 17px; letter-spacing: 3px; }
+
+  .submit-btn { height: 50px; font-size: 11px; }
+
+  .sys-info { position: static; display: block; margin-top: 18px; text-align: center; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   10. ABOUT PAGE — brand block, roadmap, slider, video
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (max-width: 700px) {
+  .moon-bg { transform: scale(0.75) translateY(10px); }
+
+  .brand-reveal-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .big-n-logo {
+    font-size: 44px;
+    padding: 0 16px;
+    line-height: 1.4;
+  }
+
+  .roadmap-list li { font-size: 10.5px; padding: 8px 0; }
+
+  .video-container { margin-bottom: 34px; border-radius: 3px; }
+  .video-overlay { top: 12px; left: 12px; font-size: 10px; gap: 7px; }
+  .rec-dot { width: 6px; height: 6px; }
+
+  .nav-rect { width: 16px; }
+}
+
+@media (max-width: 420px) {
+  .big-n-logo { font-size: 32px; padding: 0 12px; }
+  .roadmap-list li { font-size: 10px; }
+}
+
+
+/* ────────────────────────────────────────────────────────────────────────
+   11. CONTACTS PAGE — purely color overrides in the original, no layout
+   issues at any width. `:hover` states are inert on touch by default,
+   so nothing breaks; this just gives touch feedback for the green link.
+   ──────────────────────────────────────────────────────────────────────── */
+
+@media (hover: none) {
+  .contact-green-link:active { opacity: 0.7; }
+}
