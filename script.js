@@ -71,7 +71,7 @@ const startTerminal = () => {
     const VERSION_VAL = "Nightlume Core OS v1.2-stable (Build 2026.07)";
     
     // Modify target release parameters here
-    const TARGET_RELEASE = new Date("2026-07-27T23:59:59");
+    const TARGET_RELEASE = new Date("2026-07-19T23:59:59");
 
     const asciiLogo = `   .-----------------.
  .#####################.
