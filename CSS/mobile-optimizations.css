@@ -1,5 +1,5 @@
 /* ============================================================================
-   NIGHTLUME — MOBILE RESPONSIVE LAYER (FIXED & OPTIMIZED)
+   NIGHTLUME — MOBILE RESPONSIVE LAYER (FULL COMPLETED VERSION)
    Link this file LAST, after style_base.css and every page-specific
    stylesheet, so its media queries win on cascade without needing !important.
    ============================================================================ */
@@ -22,20 +22,37 @@ body { overflow-x: hidden; width: 100%; }
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   2. BASE / NAV / HERO / BUTTONS
+   2. BASE / NAV / HERO / BUTTONS (WITH CENTERED LOGO)
    ──────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
   body { padding-top: calc(var(--nav-height, 60px) + 24px); }
 
+  /* Force layout alignment context to center components */
   .nav-container {
     width: calc(100% - 24px);
     top: 12px;
     padding: 0 16px;
     box-sizing: border-box;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    position: relative;
   }
 
-  .logo { font-size: 15px; letter-spacing: 2px; }
+  /* Centered logo fixes */
+  .logo { 
+    font-size: 15px; 
+    letter-spacing: 2px;
+    margin: 0 auto;
+    text-align: center;
+    display: block;
+    width: max-content;
+    
+    /* UNCOMMENT BELOW IF LEFT/RIGHT MENU NAV ITEMS PUSH THE LOGO OFF-CENTER: */
+    /* position: absolute; left: 50%; transform: translateX(-50%); */
+  }
+  
   .nav-right { gap: 12px; }
 
   .hero { padding: 90px 16px 40px; margin-bottom: 60px; text-align: center; }
@@ -79,7 +96,7 @@ body { overflow-x: hidden; width: 100%; }
 
   .dev-grid { grid-template-columns: 1fr; gap: 14px; }
 
-  /* Fixed Terminal Container Scaling */
+  /* Terminal Handling */
   .terminal-window { width: 100%; max-width: 100%; margin-top: 24px; overflow: hidden; }
   .terminal-body { font-size: 10.5px; line-height: 1.5; padding: 16px; overflow-x: auto; }
   .ascii-logo { font-size: 7px; line-height: 1.05; white-space: pre; overflow-x: auto; display: block; width: 100%; }
@@ -88,7 +105,7 @@ body { overflow-x: hidden; width: 100%; }
 @media (max-width: 400px) {
   .stats-grid { grid-template-columns: 1fr; }
   .stat-value { font-size: 24px; }
-  .ascii-logo { font-size: 5.5px; } /* Ensures the terminal graphic shrinks cleanly without aggressive clipping */
+  .ascii-logo { font-size: 5.5px; } 
 }
 
 /* ────────────────────────────────────────────────────────────────────────
@@ -150,7 +167,7 @@ body { overflow-x: hidden; width: 100%; }
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   7. PROFILE BENTO GRID (FIXED FOR LAYOUT BREAKS)
+   7. PROFILE BENTO GRID
    ──────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
@@ -165,7 +182,6 @@ body { overflow-x: hidden; width: 100%; }
     flex-direction: column;
     gap: 14px;
   }
-  /* Explicit override to force grid items to drop default dual-column spans */
   .profile-grid > * {
     grid-column: span 1 !important;
     grid-row: span 1 !important;
@@ -241,5 +257,4 @@ body { overflow-x: hidden; width: 100%; }
 @media (hover: none) {
   .contact-green-link:active { opacity: 0.7; }
 }
-/* General mobile touch fallback */
 .contact-green-link:active { opacity: 0.7; }
