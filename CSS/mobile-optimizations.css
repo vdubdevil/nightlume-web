@@ -22,38 +22,47 @@ body { overflow-x: hidden; width: 100%; }
 }
 
 /* ────────────────────────────────────────────────────────────────────────
-   2. BASE / NAV / HERO / BUTTONS (WITH CENTERED LOGO)
+   2. BASE / NAV / HERO / BUTTONS (FIXED FOR ABSOLUTE CENTERING)
    ──────────────────────────────────────────────────────────────────────── */
 
 @media (max-width: 768px) {
   body { padding-top: calc(var(--nav-height, 60px) + 24px); }
 
-  /* Force layout alignment context to center components */
   .nav-container {
     width: calc(100% - 24px);
     top: 12px;
     padding: 0 16px;
     box-sizing: border-box;
-    display: flex;
-    justify-content: center; 
+    
+    /* Use grid to isolate 3 clean invisible columns across the bar */
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
     position: relative;
   }
 
-  /* Centered logo fixes */
+  /* Force the logo into the absolute center track */
   .logo { 
+    grid-column: 2;
     font-size: 15px; 
     letter-spacing: 2px;
-    margin: 0 auto;
     text-align: center;
+    margin: 0 auto;
     display: block;
     width: max-content;
-    
-    /* UNCOMMENT BELOW IF LEFT/RIGHT MENU NAV ITEMS PUSH THE LOGO OFF-CENTER: */
-    /* position: absolute; left: 50%; transform: translateX(-50%); */
+    white-space: nowrap;
   }
   
-  .nav-right { gap: 12px; }
+  /* Push any navigation items gracefully to the right wing */
+  .nav-right { 
+    grid-column: 3;
+    justify-self: end;
+    display: flex;
+    gap: 12px; 
+  }
+  
+  /* If you have a left element (like a menu button), it automatically stays in column 1.
+     If you DON'T have a left element, column 1 naturally stays blank, maintaining perfect balance. */
 
   .hero { padding: 90px 16px 40px; margin-bottom: 60px; text-align: center; }
   .intro-text { font-size: 11px; letter-spacing: 5px; line-height: 1.7; margin-bottom: 16px; }
@@ -65,14 +74,6 @@ body { overflow-x: hidden; width: 100%; }
   .section-wrapper { margin-bottom: 60px; padding: 0 16px; }
   .section-header { font-size: 15px; letter-spacing: 3px; margin-bottom: 20px; }
 }
-
-@media (max-width: 480px) {
-  .main-title { font-size: 24px; letter-spacing: 4px; }
-  .intro-text { font-size: 10px; letter-spacing: 3px; }
-  .action-btn { font-size: 10px; letter-spacing: 1.5px; padding: 14px; }
-  .btn-reg { padding: 10px 14px; font-size: 10px; }
-}
-
 /* ────────────────────────────────────────────────────────────────────────
    3. FEATURE GRID / STATS / TERMINAL / DEV TEAM
    ──────────────────────────────────────────────────────────────────────── */
