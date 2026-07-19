@@ -179,74 +179,63 @@ public class Launcher {
         System.out.println(WHITE + "Initializing runtime environment verification..." + RESET);
         sleep(300);
 
-        String runtimePath = System.getProperty("user.dir");
-        try {
-            runtimePath = java.net.URLDecoder.decode(runtimePath, StandardCharsets.UTF_8.name());
-        } catch (Exception ignored) {}
+        // Кроссплатформенно определяем путь к папке Nightlume в AppData / Home (один в один как в C++)
+        String os = System.getProperty("os.name").toLowerCase();
+        String baseDirPath;
 
-        File runtimeFolder = new File(runtimePath);
-        String baseDataPath = runtimeFolder.getParent();
+        if (os.contains("win")) {
+            baseDirPath = System.getenv("APPDATA") + File.separator + "Nightlume";
+        } else {
+            baseDirPath = System.getProperty("user.home") + File.separator + ".Nightlume";
+        }
 
-        System.out.println(WHITE + "Active environment directory: " + GREEN + runtimePath + RESET);
+        File baseDir = new File(baseDirPath);
+
+        System.out.println(WHITE + "Target game directory: " + GREEN + baseDir.getAbsolutePath() + RESET);
 
         String pathSeparator = System.getProperty("path.separator");
 
-        // Строим железобетонные пути
-        String clientJarPath = runtimePath + File.separator + "Nightlume.jar";
-        String nativePath = runtimePath + File.separator + "libraries" + File.separator + "natives";
-        File libsFolder = new File(runtimePath + File.separator + "libraries");
+        // Строим абсолютные пути к файлам внутри %APPDATA%\Nightlume
+        String clientJarPath = baseDir.getAbsolutePath() + File.separator + "Nightlume.jar";
+        String nativePath = baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "natives";
+        String classpathLibs = baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "*";
 
-        StringBuilder classpath = new StringBuilder();
-        classpath.append(clientJarPath);
-
-        if (libsFolder.exists() && libsFolder.isDirectory()) {
-            File[] files = libsFolder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.getName().endsWith(".jar")) {
-                        classpath.append(pathSeparator).append(file.getAbsolutePath());
-                    }
-                }
-            }
-        }
-
+        // Формируем команду запуска процесса Майнкрафт 1.16.5
         List<String> command = new ArrayList<>();
         command.add("java");
         command.add("-Xmx2G");
-        command.add("-Djava.library.path=" + nativePath);
+        command.add("-Djava.library.path=" + nativePath); // Абсолютный путь к нативам
         command.add("-cp");
-        command.add(classpath.toString());
+        command.add(clientJarPath + pathSeparator + classpathLibs); // Абсолютные пути к JAR и либам
         command.add("net.minecraft.client.main.Main");
         command.add("--username");
         command.add("Player_" + (100 + random.nextInt(900)));
-        command.add("--uuid");
-        command.add("00000000-0000-0000-0000-000000000000");
-        command.add("--accessToken");
-        command.add("0");
-        command.add("--userType");
-        command.add("legacy");
         command.add("--version");
         command.add("1.16.5");
         command.add("--gameDir");
-        command.add(runtimePath);
+        command.add(baseDir.getAbsolutePath()); // Игра будет сохранять миры и опции в AppData
         command.add("--assetsDir");
-        command.add(runtimePath + File.separator + "assets");
+        command.add(baseDir.getAbsolutePath() + File.separator + "assets");
         command.add("--assetIndex");
         command.add("1.16");
 
+        System.out.println(GRAY + "Spawning native JVM thread..." + RESET);
+        sleep(400);
+
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(runtimeFolder); // Принудительно запускаем в контексте папки Runtime
+            pb.directory(baseDir); // Принудительно устанавливаем рабочую папку в %APPDATA%\Nightlume
+            pb.inheritIO(); // Пробрасываем логи майна прямо в эту консоль
 
-            pb.redirectErrorStream(true);
-            pb.inheritIO();
+            System.out.println(GREEN + "[SUCCESS] Minecraft processes invoked. Handoff complete." + RESET);
+            sleep(500);
 
-            System.out.println(GREEN + "[SUCCESS] Handoff complete. Enjoy Nightlume!" + RESET);
+            pb.start(); // Стартуем игру
+            System.exit(0); // Закрываем лаунчер, оставляя игру работать
 
-            Process process = pb.start();
-            System.exit(0);
-        } catch (Exception e) {
-            System.out.println(RED + "[ERROR] Launch crashed: " + e.getMessage() + RESET);
+        } catch (IOException e) {
+            System.out.println(RED + "[ERROR] Failed to execute java command: " + e.getMessage() + RESET);
+            System.out.println(WHITE + "Please ensure java is added to your environment variables (PATH)." + RESET);
         }
     }
     private static void typeText(String text, int delay) {
