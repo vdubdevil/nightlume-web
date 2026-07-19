@@ -47,14 +47,14 @@ public class Launcher {
        .-----------------.
      .#####################.
     #######---         ----
-   ####  ..###############..  	 _   _ _        _     _   _                      
-   #### #################### 	| \\ | |(_)    | |   | | | |                     
-   #### #################### 	|  \\| |_  __ _| |__ | |_| |_   _ _ __ ___   ___ 
-   #### ####################    	| . ` | |/ _` | '_ \\| __| | | | | '_ ` _ \\ / _ \\
-   #### ####################    	| |\\  | | (_| | | | | |_| | |_| | | | | | |  __/
-   ####  ''##############''     	|_| \\_|_|\\__, |_| |_|\\__|_|\\__,_|_| |_| |_|\\___|
-    #######---         ----              	__/  |                                
-     '####################'              	|___/                                 
+   ####  ..###############..     _   _ _        _     _   _                      
+   #### ####################    | \\ | |(_)    | |   | | | |                     
+   #### ####################    |  \\| |_  __ _| |__ | |_| |_   _ _ __ ___   ___ 
+   #### ####################        | . ` | |/ _` | '_ \\| __| | | | | '_ ` _ \\ / _ \\
+   #### ####################        | |\\  | | (_| | | | | |_| | |_| | | | | | |  __/
+   ####  ''##############''         |_| \\_|_|\\__, |_| |_|\\__|_|\\__,_|_| |_| |_|\\___|
+    #######---         ----                 __/  |                                
+     '####################'                 |___/                                 
        '-----------------'   """;
         System.out.println(GREEN + asciiLogo + RESET);
         System.out.print(WHITE + " » CURRENT INSTALLED VERSION: " + RESET);
@@ -179,7 +179,6 @@ public class Launcher {
         System.out.println(WHITE + "Initializing runtime environment verification..." + RESET);
         sleep(300);
 
-        // Кроссплатформенно определяем путь к папке Nightlume в AppData / Home
         String os = System.getProperty("os.name").toLowerCase();
         String baseDirPath;
 
@@ -189,28 +188,24 @@ public class Launcher {
             baseDirPath = System.getProperty("user.home") + File.separator + ".Nightlume";
         }
 
-        // ЖЕЛЕЗОБЕТОННАЯ СТРАХОВКА: Получаем каноничный абсолютный путь и создаем папку
         File baseDir = new File(baseDirPath).getAbsoluteFile();
         if (!baseDir.exists()) {
-            baseDir.mkdirs(); // Если папки нет — создаем её прямо из Java, чтобы не было ошибки 267
+            baseDir.mkdirs();
         }
 
         System.out.println(WHITE + "Target game directory: " + GREEN + baseDir.getAbsolutePath() + RESET);
 
         String pathSeparator = System.getProperty("path.separator");
 
-        // Строим абсолютные пути к файлам внутри %APPDATA%\Nightlume
         String clientJarPath = baseDir.getAbsolutePath() + File.separator + "Nightlume.jar";
-        String nativePath = baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "natives";
         String classpathLibs = baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "*";
 
-        // Формируем команду запуска процесса Майнкрафт 1.16.5
         List<String> command = new ArrayList<>();
         command.add("java");
         command.add("-Xmx2G");
-        command.add("-Djava.library.path=" + nativePath);
+        command.add("-Djava.library.path=" + baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "natives");
         command.add("-cp");
-        command.add(clientJarPath + pathSeparator + classpathLibs);
+        command.add("." + pathSeparator + clientJarPath + pathSeparator + classpathLibs);
         command.add("net.minecraft.client.main.Main");
         command.add("--username");
         command.add("Player_" + (100 + random.nextInt(900)));
@@ -228,23 +223,23 @@ public class Launcher {
 
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(baseDir); // Теперь папка гарантированно существует!
-            pb.inheritIO(); // Перенаправляем вывод игры прямо в текущую консоль
+            pb.directory(baseDir);
+            pb.inheritIO();
 
             System.out.println(GREEN + "[SUCCESS] Spawning Minecraft sub-process..." + RESET);
             sleep(500);
 
-            // Запускаем процесс один раз и сохраняем ссылку для отладки
             Process process = pb.start();
             System.out.println(GREEN + "[SUCCESS] Handoff complete. Monitoring game thread..." + RESET);
 
-            // Лаунчер не закрывается, а ждет завершения процесса игры, чтобы показать лог краша
             int exitCode = process.waitFor();
             System.out.println(RED + "[GAME TERMINATED] Minecraft exited with code: " + exitCode + RESET);
 
         } catch (Exception e) {
             System.out.println(RED + "[ERROR] Failed to execute java command: " + e.getMessage() + RESET);
         }
+    } // Вот эта скобка была пропущена!
+
     private static void typeText(String text, int delay) {
         for (char ch : text.toCharArray()) {
             System.out.print(ch);
