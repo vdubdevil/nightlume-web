@@ -1,6 +1,5 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
@@ -17,8 +16,6 @@ public class Launcher {
     private static final String USER_VAL = "vdubdevil";
     private static final String HOSTNAME_VAL = "nightlume";
     private static final String VERSION_VAL = "Nightlume Launcher Core v1.0-stable (Build 2026.07)";
-
-    private static final LocalDateTime TARGET_RELEASE = LocalDateTime.of(2026, Month.JULY, 20, 0, 0, 0);
 
     private static final Scanner scanner = new Scanner(System.in);
     private static final Random random = new Random();
@@ -167,10 +164,6 @@ public class Launcher {
         }
 
         File baseDir = new File(baseDirPath).getAbsoluteFile();
-        if (!baseDir.exists()) {
-            baseDir.mkdirs();
-        }
-
         System.out.println(WHITE + "Target game directory: " + GREEN + baseDir.getAbsolutePath() + RESET);
 
         String pathSeparator = System.getProperty("path.separator");
