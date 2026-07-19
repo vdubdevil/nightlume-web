@@ -37,19 +37,25 @@ public class Launcher {
     }
 
     private static void printAsciiLogo() {
-        String asciiLogo = "       .-----------------.\n" +
-                "     .#####################.\n" +
-                "    #######---         ----\n" +
-                "   ####  ..###############..     _   _ _        _     _   _\n" +
-                "   #### ####################    | \\\\ | |(_)    | |   | | | |\n" +
-                "   #### ####################    |  \\\\| |_  __ _| |__ | |_| |_   _ _ __ ___   ___\n" +
-                "   #### ####################        | . ` | |/ _` | '_ \\\\| __| | | | | '_ ` _ \\\\ / _ \\\\\n" +
-                "   #### ####################        | |\\\\  | | (_| | | | | |_| | |_| | | | | | |  __/\n" +
-                "   ####  ''##############''         |_| \\\\_|_|\\__, |_| |_|\\__|_|\\__,_|_| |_| |_|\\___|\n" +
-                "    #######---         ----                 __/  |\n" +
-                "     '####################'                 |___/\n" +
-                "       '-----------------'";
-        System.out.println(GREEN + asciiLogo + RESET);
+        String[] lines = {
+                "       .-----------------.",
+                "     .#####################.",
+                "    #######---         ----",
+                "   ####  ..###############..     _   _ _        _     _   _",
+                "   #### ####################    | \\ | |(_)    | |   | | | |",
+                "   #### ####################    |  \\| |_  __ _| |__ | |_| |_   _ _ __ ___   ___",
+                "   #### ####################    | . ` | |/ _` | '_ \\| __| | | | | '_ ` _ \\ / _ \\",
+                "   #### ####################    | |\\  | | (_| | | | | |_| | |_| | | | | | |  __/",
+                "   ####  ''##############''     |_| \\_|_|\\__, |_| |_|\\__|_|\\__,_|_| |_| |_|\\___|",
+                "    #######---         ----                 __/  |",
+                "     '####################'                 |___/",
+                "       '-----------------'"
+        };
+
+        for (String line : lines) {
+            System.out.println(GREEN + line + RESET);
+        }
+
         System.out.print(WHITE + " » CURRENT INSTALLED VERSION: " + RESET);
         System.out.println(GREEN + "1.16.5-Nightlume" + RESET);
         System.out.println("\n");
@@ -164,6 +170,14 @@ public class Launcher {
         }
 
         File baseDir = new File(baseDirPath).getAbsoluteFile();
+
+        if (!baseDir.exists()) {
+            boolean created = baseDir.mkdirs();
+            if (created) {
+                System.out.println(GRAY + "[SYSTEM] Directory did not exist. Created successfully." + RESET);
+            }
+        }
+
         System.out.println(WHITE + "Target game directory: " + GREEN + baseDir.getAbsolutePath() + RESET);
 
         String pathSeparator = System.getProperty("path.separator");
