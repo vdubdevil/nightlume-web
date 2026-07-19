@@ -179,7 +179,7 @@ public class Launcher {
         System.out.println(WHITE + "Initializing runtime environment verification..." + RESET);
         sleep(300);
 
-        // Кроссплатформенно определяем путь к папке Nightlume в AppData / Home (один в один как в C++)
+        // Кроссплатформенно определяем путь к папке Nightlume в AppData / Home
         String os = System.getProperty("os.name").toLowerCase();
         String baseDirPath;
 
@@ -189,7 +189,11 @@ public class Launcher {
             baseDirPath = System.getProperty("user.home") + File.separator + ".Nightlume";
         }
 
-        File baseDir = new File(baseDirPath);
+        // ЖЕЛЕЗОБЕТОННАЯ СТРАХОВКА: Получаем каноничный абсолютный путь и создаем папку
+        File baseDir = new File(baseDirPath).getAbsoluteFile();
+        if (!baseDir.exists()) {
+            baseDir.mkdirs(); // Если папки нет — создаем её прямо из Java, чтобы не было ошибки 267
+        }
 
         System.out.println(WHITE + "Target game directory: " + GREEN + baseDir.getAbsolutePath() + RESET);
 
@@ -204,16 +208,16 @@ public class Launcher {
         List<String> command = new ArrayList<>();
         command.add("java");
         command.add("-Xmx2G");
-        command.add("-Djava.library.path=" + nativePath); // Абсолютный путь к нативам
+        command.add("-Djava.library.path=" + nativePath);
         command.add("-cp");
-        command.add(clientJarPath + pathSeparator + classpathLibs); // Абсолютные пути к JAR и либам
+        command.add(clientJarPath + pathSeparator + classpathLibs);
         command.add("net.minecraft.client.main.Main");
         command.add("--username");
         command.add("Player_" + (100 + random.nextInt(900)));
         command.add("--version");
         command.add("1.16.5");
         command.add("--gameDir");
-        command.add(baseDir.getAbsolutePath()); // Игра будет сохранять миры и опции в AppData
+        command.add(baseDir.getAbsolutePath());
         command.add("--assetsDir");
         command.add(baseDir.getAbsolutePath() + File.separator + "assets");
         command.add("--assetIndex");
@@ -224,14 +228,14 @@ public class Launcher {
 
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(baseDir); // Принудительно устанавливаем рабочую папку в %APPDATA%\Nightlume
-            pb.inheritIO(); // Пробрасываем логи майна прямо в эту консоль
+            pb.directory(baseDir); // Теперь папка гарантированно существует!
+            pb.inheritIO();
 
             System.out.println(GREEN + "[SUCCESS] Minecraft processes invoked. Handoff complete." + RESET);
             sleep(500);
 
             pb.start(); // Стартуем игру
-            System.exit(0); // Закрываем лаунчер, оставляя игру работать
+            System.exit(0); // Закрываем лаунчер-оболочку
 
         } catch (IOException e) {
             System.out.println(RED + "[ERROR] Failed to execute java command: " + e.getMessage() + RESET);
