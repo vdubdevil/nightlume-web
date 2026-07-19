@@ -179,7 +179,7 @@ public class Launcher {
         System.out.println(WHITE + "Initializing runtime environment verification..." + RESET);
         sleep(300);
 
-        // Получаем строгий абсолютный путь к папке, где запущен джарник
+        // Получаем путь к текущей папке запуска (.exe)
         File currentDirFile = new File(".");
         String absolutePath = currentDirFile.getAbsolutePath();
         if (absolutePath.endsWith(".")) {
@@ -189,33 +189,49 @@ public class Launcher {
             absolutePath = absolutePath.substring(0, absolutePath.length() - 1);
         }
 
-        System.out.println(WHITE + "Target base directory: " + GREEN + absolutePath + RESET);
+        // Наш целевой путь — папка Runtime
+        String runtimePath = absolutePath + File.separator + "Runtime";
+        System.out.println(WHITE + "Target Runtime directory: " + GREEN + runtimePath + RESET);
 
         String pathSeparator = System.getProperty("path.separator");
 
-        // Формируем абсолютные пути до папок внутри распакованного Runtime
-        String runtimePath = absolutePath + File.separator + "Runtime";
+        // Корректные абсолютные пути внутри Runtime
+        String clientJarPath = runtimePath + File.separator + "Nightlume.jar"; // Твой MCP теперь тут!
         String nativePath = runtimePath + File.separator + "libraries" + File.separator + "natives";
-        String clientJarPath = absolutePath + File.separator + "Nightlume.jar";
-        String librariesMask = runtimePath + File.separator + "libraries" + File.separator + "*";
+        File libsFolder = new File(runtimePath + File.separator + "libraries");
+
+        StringBuilder classpath = new StringBuilder();
+
+        // 1. Добавляем в Classpath путь к JAR-файлу игры из папки Runtime
+        classpath.append(clientJarPath);
+
+        // 2. Добавляем туда же все библиотеки .jar из Runtime/libraries
+        if (libsFolder.exists() && libsFolder.isDirectory()) {
+            File[] files = libsFolder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.getName().endsWith(".jar")) {
+                        classpath.append(pathSeparator).append(file.getAbsolutePath());
+                    }
+                }
+            }
+        } else {
+            System.out.println(RED + "[ERROR] Libraries folder not found at: " + libsFolder.getAbsolutePath() + RESET);
+        }
 
         List<String> command = new ArrayList<>();
         command.add("java");
         command.add("-Xmx2G");
-
-        // ДОБАВЛЯЕМ ЛОГИРОВАНИЕ ХЭШЕЙ И КЛАССОВ ДЛЯ ОТЛАДКИ КРАША NATIVES
-        command.add("-XX:+ShowCodeDetailsInExceptionMessages");
-
         command.add("-Djava.library.path=" + nativePath);
         command.add("-cp");
-        command.add(clientJarPath + pathSeparator + librariesMask);
+        command.add(classpath.toString());
         command.add("net.minecraft.client.main.Main");
         command.add("--username");
         command.add("Player_" + (100 + random.nextInt(900)));
         command.add("--version");
         command.add("1.16.5");
         command.add("--gameDir");
-        command.add(runtimePath);
+        command.add(runtimePath); // Указываем майнкрафту работать внутри папки Runtime
         command.add("--assetsDir");
         command.add(runtimePath + File.separator + "assets");
         command.add("--assetIndex");
@@ -226,9 +242,8 @@ public class Launcher {
 
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(new File(runtimePath)); // Рабочая директория — строго внутри Runtime
+            pb.directory(new File(runtimePath)); // Запускаем процесс прямо в контексте папки Runtime
 
-            // ОБЪЕДИНЯЕМ ПОТОК ОШИБОК И СТАНДАРТНЫЙ ВЫВОД (Критично при молчаливых крашах)
             pb.redirectErrorStream(true);
             pb.inheritIO();
 
@@ -236,15 +251,12 @@ public class Launcher {
             sleep(500);
 
             Process process = pb.start();
-
-            // Ждем завершения процесса, если он упадет сразу
             int exitCode = process.waitFor();
 
             if (exitCode != 0) {
                 System.out.println(RED + "\n[CRASH] Minecraft process exited with code: " + exitCode + RESET);
-                System.out.println(WHITE + "If no log is visible above, check 'hs_err_pidXXX.log' file in " + runtimePath + RESET);
                 System.out.println(WHITE + "Press Enter to exit..." + RESET);
-                scanner.nextLine(); // Окно не закроется, пока ты не нажмешь Enter
+                scanner.nextLine();
             }
 
             System.exit(0);
