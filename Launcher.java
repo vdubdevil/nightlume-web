@@ -226,12 +226,25 @@ public class Launcher {
         command.add("-cp");
         command.add(classpath.toString());
         command.add("net.minecraft.client.main.Main");
+
+        // Обязательные параметры игрока
         command.add("--username");
         command.add("Player_" + (100 + random.nextInt(900)));
+
+        command.add("--uuid");
+        command.add("00000000-0000-0000-0000-000000000000"); // Заглушка UUID
+
+        command.add("--accessToken");
+        command.add("0"); // ВОТ ОН! Токен авторизации, который требовала игра
+
+        command.add("--userType");
+        command.add("legacy"); // Тип аккаунта (legacy или mojang)
+
+        // Параметры версий и папок
         command.add("--version");
         command.add("1.16.5");
         command.add("--gameDir");
-        command.add(runtimePath); // Указываем майнкрафту работать внутри папки Runtime
+        command.add(runtimePath);
         command.add("--assetsDir");
         command.add(runtimePath + File.separator + "assets");
         command.add("--assetIndex");
