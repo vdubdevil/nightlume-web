@@ -229,19 +229,22 @@ public class Launcher {
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
             pb.directory(baseDir); // Теперь папка гарантированно существует!
-            pb.inheritIO();
+            pb.inheritIO(); // Перенаправляем вывод игры прямо в текущую консоль
 
-            System.out.println(GREEN + "[SUCCESS] Minecraft processes invoked. Handoff complete." + RESET);
+            System.out.println(GREEN + "[SUCCESS] Spawning Minecraft sub-process..." + RESET);
             sleep(500);
 
-            pb.start(); // Стартуем игру
-            System.exit(0); // Закрываем лаунчер-оболочку
+            // Запускаем процесс один раз и сохраняем ссылку для отладки
+            Process process = pb.start();
+            System.out.println(GREEN + "[SUCCESS] Handoff complete. Monitoring game thread..." + RESET);
 
-        } catch (IOException e) {
+            // Лаунчер не закрывается, а ждет завершения процесса игры, чтобы показать лог краша
+            int exitCode = process.waitFor();
+            System.out.println(RED + "[GAME TERMINATED] Minecraft exited with code: " + exitCode + RESET);
+
+        } catch (Exception e) {
             System.out.println(RED + "[ERROR] Failed to execute java command: " + e.getMessage() + RESET);
-            System.out.println(WHITE + "Please ensure java is added to your environment variables (PATH)." + RESET);
         }
-    }
     private static void typeText(String text, int delay) {
         for (char ch : text.toCharArray()) {
             System.out.print(ch);
