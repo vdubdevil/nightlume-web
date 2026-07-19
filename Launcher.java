@@ -170,24 +170,70 @@ public class Launcher {
         }
 
         File baseDir = new File(baseDirPath).getAbsoluteFile();
-
         if (!baseDir.exists()) {
-            boolean created = baseDir.mkdirs();
-            if (created) {
-                System.out.println(GRAY + "[SYSTEM] Directory did not exist. Created successfully." + RESET);
-            }
+            baseDir.mkdirs();
         }
 
         System.out.println(WHITE + "Target game directory: " + GREEN + baseDir.getAbsolutePath() + RESET);
 
+        // --- ДИРЕКТНЫЕ ССЫЛКИ ЧЕРЕЗ CLOUDFLARE PAGES (БЕЗ РЕДИРЕКТОВ ГИТХАБА) ---
+        String cdnURL = "https://pub-d37d8e049a7a45afadb50436484bbe61.r2.dev/";
+
+        File clientJarFile = new File(baseDir, "Nightlume.jar");
+        File libsDir = new File(baseDir, "libraries");
+        File assetsDir = new File(baseDir, "assets");
+
+        // 1. Скачивание основного исполнительного файла клиента
+        if (!clientJarFile.exists() || clientJarFile.length() == 0) {
+            System.out.println(WHITE + "» Nightlume.jar not found. Downloading via Cloudflare Edge..." + RESET);
+            if (!downloadFileDirect(cdnURL + "Nightlume.jar", clientJarFile)) {
+                System.out.println(RED + "[FATAL] Failed to download game binary core. Execution halted." + RESET);
+                return;
+            }
+        }
+
+        // 2. Скачивание и распаковка библиотек (библиотеки проверяются по наличию папки)
+        if (!libsDir.exists() || libsDir.list() == null || libsDir.list().length == 0) {
+            System.out.println(WHITE + "» Runtime libraries missing. Syncing package..." + RESET);
+            File libsZip = new File(baseDir, "libraries.zip");
+            if (downloadFileDirect(cdnURL + "libraries.zip", libsZip)) {
+                System.out.println(GRAY + "[SYSTEM] Deploying native libraries matrix..." + RESET);
+                extractZipViaPowershell(libsZip, baseDir);
+                libsZip.delete();
+            } else {
+                System.out.println(RED + "[FATAL] Libraries synchronization failed." + RESET);
+                return;
+            }
+        }
+
+        // 3. Скачивание и распаковка игровых ресурсов (ассетов)
+        if (!assetsDir.exists() || assetsDir.list() == null || assetsDir.list().length == 0) {
+            System.out.println(WHITE + "» Game assets missing. Fetching data clusters..." + RESET);
+            File assetsZip = new File(baseDir, "assets.zip");
+            if (downloadFileDirect(cdnURL + "assets.zip", assetsZip)) {
+                System.out.println(GRAY + "[SYSTEM] Extracting assets filesystem..." + RESET);
+                extractZipViaPowershell(assetsZip, baseDir);
+                assetsZip.delete();
+            } else {
+                System.out.println(RED + "[FATAL] Assets deployment failed." + RESET);
+                return;
+            }
+        }
+
+        // Проверяем физическое наличие файла перед генерацией потока CreateProcess
+        if (!clientJarFile.exists() || clientJarFile.length() == 0) {
+            System.out.println(RED + "[ERROR] Internal Classpath Error: Nightlume.jar is missing or corrupted!" + RESET);
+            return;
+        }
+
         String pathSeparator = System.getProperty("path.separator");
-        String clientJarPath = baseDir.getAbsolutePath() + File.separator + "Nightlume.jar";
-        String classpathLibs = baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "*";
+        String clientJarPath = clientJarFile.getAbsolutePath();
+        String classpathLibs = libsDir.getAbsolutePath() + File.separator + "*";
 
         List<String> command = new ArrayList<>();
         command.add("java");
         command.add("-Xmx2G");
-        command.add("-Djava.library.path=" + baseDir.getAbsolutePath() + File.separator + "libraries" + File.separator + "natives");
+        command.add("-Djava.library.path=" + libsDir.getAbsolutePath() + File.separator + "natives");
         command.add("-cp");
         command.add(clientJarPath + pathSeparator + classpathLibs);
         command.add("net.minecraft.client.main.Main");
@@ -198,7 +244,7 @@ public class Launcher {
         command.add("--gameDir");
         command.add(baseDir.getAbsolutePath());
         command.add("--assetsDir");
-        command.add(baseDir.getAbsolutePath() + File.separator + "assets");
+        command.add(assetsDir.getAbsolutePath());
         command.add("--assetIndex");
         command.add("1.16");
 
@@ -221,6 +267,65 @@ public class Launcher {
 
         } catch (Exception e) {
             System.out.println(RED + "[ERROR] Failed to execute java command: " + e.getMessage() + RESET);
+        }
+    }
+
+    // Чистый, скоростной загрузчик под прямые ссылки (устойчивый к разрывам соединения)
+    private static boolean downloadFileDirect(String urlString, File targetFile) {
+        try {
+            java.net.URL url = new java.net.URL(urlString);
+            java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+
+            int status = conn.getResponseCode();
+            if (status != 200) {
+                System.out.println("\n" + RED + "[SERVER ERROR] HTTP Status: " + status + " for URL: " + urlString + RESET);
+                return false;
+            }
+
+            long totalBytes = conn.getContentLengthLong();
+
+            try (InputStream in = conn.getInputStream();
+                 FileOutputStream out = new FileOutputStream(targetFile)) {
+
+                byte[] buffer = new byte[16384]; // Увеличенный буфер для скорости скачивания
+                long bytesReadTotal = 0;
+                int bytesRead;
+
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                    bytesReadTotal += bytesRead;
+
+                    if (totalBytes > 0) {
+                        int percent = (int) ((bytesReadTotal * 100) / totalBytes);
+                        System.out.print(String.format("\r" + GREEN + "[DOWNLOADING] Core Node: %d%% (%d MB / %d MB)" + RESET,
+                                percent, bytesReadTotal / (1024*1024), totalBytes / (1024*1024)));
+                    } else {
+                        System.out.print(String.format("\r" + GREEN + "[DOWNLOADING] In Progress: %d MB..." + RESET, bytesReadTotal / (1024*1024)));
+                    }
+                }
+                System.out.println("\n" + GREEN + "[SUCCESS] Verification and synchronization complete." + RESET);
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("\n" + RED + "[NETWORK FAULT] Stream dropped: " + e.getMessage() + RESET);
+            if (targetFile.exists()) {
+                targetFile.delete(); // Удаляем битый файл при ошибке
+            }
+            return false;
+        }
+    }
+
+    private static void extractZipViaPowershell(File zipFile, File destDir) {
+        try {
+            String cmd = "powershell -Command \"Expand-Archive -Path '" + zipFile.getAbsolutePath() +
+                    "' -DestinationPath '" + destDir.getAbsolutePath() + "' -Force\"";
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();
+        } catch (Exception e) {
+            System.out.println(RED + "[DEPLOYMENT ERROR] Extraction failed: " + e.getMessage() + RESET);
         }
     }
 
