@@ -179,33 +179,26 @@ public class Launcher {
         System.out.println(WHITE + "Initializing runtime environment verification..." + RESET);
         sleep(300);
 
-        // Получаем путь к текущей папке запуска (.exe)
-        File currentDirFile = new File(".");
-        String absolutePath = currentDirFile.getAbsolutePath();
-        if (absolutePath.endsWith(".")) {
-            absolutePath = absolutePath.substring(0, absolutePath.length() - 1);
-        }
-        if (absolutePath.endsWith(File.separator)) {
-            absolutePath = absolutePath.substring(0, absolutePath.length() - 1);
-        }
+        // Java автоматически берет абсолютный путь к папке, где лежит выполняемый .jar
+        File currentDirFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+        File runtimeFolder = currentDirFile.getParentFile(); // Это папка Runtime
+        String runtimePath = runtimeFolder.getAbsolutePath();
 
-        // Наш целевой путь — папка Runtime
-        String runtimePath = absolutePath + File.separator + "Runtime";
-        System.out.println(WHITE + "Target Runtime directory: " + GREEN + runtimePath + RESET);
+        // Папка уровнем выше (корень Nightlume в AppData)
+        String baseDataPath = runtimeFolder.getParent();
+
+        System.out.println(WHITE + "Active environment directory: " + GREEN + runtimePath + RESET);
 
         String pathSeparator = System.getProperty("path.separator");
 
-        // Корректные абсолютные пути внутри Runtime
-        String clientJarPath = runtimePath + File.separator + "Nightlume.jar"; // Твой MCP теперь тут!
+        // Строим железобетонные пути
+        String clientJarPath = runtimePath + File.separator + "Nightlume.jar";
         String nativePath = runtimePath + File.separator + "libraries" + File.separator + "natives";
         File libsFolder = new File(runtimePath + File.separator + "libraries");
 
         StringBuilder classpath = new StringBuilder();
-
-        // 1. Добавляем в Classpath путь к JAR-файлу игры из папки Runtime
         classpath.append(clientJarPath);
 
-        // 2. Добавляем туда же все библиотеки .jar из Runtime/libraries
         if (libsFolder.exists() && libsFolder.isDirectory()) {
             File[] files = libsFolder.listFiles();
             if (files != null) {
@@ -215,8 +208,6 @@ public class Launcher {
                     }
                 }
             }
-        } else {
-            System.out.println(RED + "[ERROR] Libraries folder not found at: " + libsFolder.getAbsolutePath() + RESET);
         }
 
         List<String> command = new ArrayList<>();
@@ -226,21 +217,14 @@ public class Launcher {
         command.add("-cp");
         command.add(classpath.toString());
         command.add("net.minecraft.client.main.Main");
-
-        // Обязательные параметры игрока
         command.add("--username");
         command.add("Player_" + (100 + random.nextInt(900)));
-
         command.add("--uuid");
-        command.add("00000000-0000-0000-0000-000000000000"); // Заглушка UUID
-
+        command.add("00000000-0000-0000-0000-000000000000");
         command.add("--accessToken");
-        command.add("0"); // ВОТ ОН! Токен авторизации, который требовала игра
-
+        command.add("0");
         command.add("--userType");
-        command.add("legacy"); // Тип аккаунта (legacy или mojang)
-
-        // Параметры версий и папок
+        command.add("legacy");
         command.add("--version");
         command.add("1.16.5");
         command.add("--gameDir");
@@ -250,33 +234,19 @@ public class Launcher {
         command.add("--assetIndex");
         command.add("1.16");
 
-        System.out.println(GRAY + "Spawning native JVM thread..." + RESET);
-        sleep(400);
-
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(new File(runtimePath)); // Запускаем процесс прямо в контексте папки Runtime
+            pb.directory(runtimeFolder); // Принудительно запускаем в контексте папки Runtime
 
             pb.redirectErrorStream(true);
             pb.inheritIO();
 
-            System.out.println(GREEN + "[SUCCESS] Minecraft processes invoked. Handoff complete." + RESET);
-            sleep(500);
+            System.out.println(GREEN + "[SUCCESS] Handoff complete. Enjoy Nightlume!" + RESET);
 
             Process process = pb.start();
-            int exitCode = process.waitFor();
-
-            if (exitCode != 0) {
-                System.out.println(RED + "\n[CRASH] Minecraft process exited with code: " + exitCode + RESET);
-                System.out.println(WHITE + "Press Enter to exit..." + RESET);
-                scanner.nextLine();
-            }
-
             System.exit(0);
-
         } catch (Exception e) {
-            System.out.println(RED + "[ERROR] Process failed: " + e.getMessage() + RESET);
-            scanner.nextLine();
+            System.out.println(RED + "[ERROR] Launch crashed: " + e.getMessage() + RESET);
         }
     }
     private static void typeText(String text, int delay) {
